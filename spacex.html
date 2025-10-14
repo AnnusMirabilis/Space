@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The SpaceX Revolution</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <style>
+        /* Custom Space Theme Styling */
+        :root {
+            --color-accent: #00b4d8; /* Refined Cyan/Electric Blue Accent */
+            --color-bg-dark: #040711; /* Very deep space black */
+            /* UPDATED: Star Field Variables */
+            --star-small: rgba(255, 255, 255, 0.3); /* Fainter white stars */
+            --star-medium: rgba(255, 255, 255, 0.6);
+            --star-large: rgba(255, 255, 255, 0.8);
+            --star-accent: rgba(0, 180, 216, 0.9); /* New Cyan Star Color */
+        }
+
+        /* --- UPDATED KEYFRAME ANIMATIONS FOR COMPLEX, RANDOMIZED MOTION --- */
+        /* Layer 1: Fastest speed, closest layer, includes accent color stars */
+        @keyframes moveStarsLayer1 { 
+            from { background-position: 50px 700px, 700px 150px, 120px 400px, 600px 50px, 80px 800px; }
+            to { background-position: -750px -50px, -50px -750px, -580px -400px, 200px -600px, -420px 50px; }
+        }
+        /* Layer 2: Medium-Fast speed, moving in various directions */
+        @keyframes moveStarsLayer2 { 
+            from { background-position: 100px 50px, 800px 200px, 500px 50px, 250px 750px, 900px 300px; }
+            to { background-position: -400px 250px, 100px -600px, 700px 550px, -150px -400px, -300px 800px; }
+        }
+        /* Layer 3: Medium speed, different movement offset */
+        @keyframes moveStarsLayer3 { 
+            from { background-position: 300px 600px, 700px 400px, 50px 250px, 850px 750px, 400px 100px; }
+            to { background-position: 800px -100px, -500px 200px, 300px 950px, 50px -50px, 600px 300px; }
+        }
+        /* Layer 4: Slower speed, larger stars */
+        @keyframes moveStarsLayer4 { 
+            from { background-position: 650px 250px, 100px 100px, 550px 850px, 200px 400px; }
+            to { background-position: -50px 850px, 700px -100px, -150px -50px, 600px 500px; }
+        }
+        /* Layer 5: Very slow, deep background stars */
+        @keyframes moveStarsLayer5 { 
+            from { background-position: 20px 30px, 150px 150px, 350px 650px; }
+            to { background-position: 500px 500px, 650px 650px, 850px 150px; }
+        }
+        /* Layer 6: Slowest, subtle deep-space shift */
+        @keyframes moveStarsLayer6 { 
+            from { background-position: 400px 350px, 500px 50px, 100px 400px, 800px 100px; }
+            to { background-position: -200px -250px, -100px -550px, 500px -100px, 0px 500px; }
+        }
+        /* ------------------------------------------- */
+        
+        body {
+            /* Switched to a system-font stack to avoid blocked external font requests */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            
+            background-color: var(--color-bg-dark); /* Base color is set here */
+            background-image: 
+                /* LAYER 1: Accent Color Stars (Largest/Closest/Fastest - moveStarsLayer1) - 5 stars */
+                radial-gradient(4px 4px at 50px 700px, var(--star-accent), transparent),
+                radial-gradient(4px 4px at 700px 150px, var(--star-accent), transparent),
+                radial-gradient(3px 3px at 120px 400px, var(--star-accent), transparent),
+                radial-gradient(3px 3px at 600px 50px, var(--star-accent), transparent),
+                radial-gradient(4px 4px at 80px 800px, var(--star-accent), transparent),
+
+                /* LAYER 2: Large White Stars (moveStarsLayer2) - 5 stars */
+                radial-gradient(4px 4px at 100px 50px, var(--star-large), transparent),
+                radial-gradient(4px 4px at 800px 200px, var(--star-large), transparent),
+                radial-gradient(4px 4px at 500px 50px, var(--star-large), transparent),
+                radial-gradient(4px 4px at 250px 750px, var(--star-large), transparent),
+                radial-gradient(4px 4px at 900px 300px, var(--star-large), transparent),
+                
+                /* LAYER 3: Medium White Stars (moveStarsLayer3) - 5 stars */
+                radial-gradient(3px 3px at 300px 600px, var(--star-medium), transparent),
+                radial-gradient(3px 3px at 700px 400px, var(--star-medium), transparent),
+                radial-gradient(3px 3px at 50px 250px, var(--star-medium), transparent),
+                radial-gradient(3px 3px at 850px 750px, var(--star-medium), transparent),
+                radial-gradient(3px 3px at 400px 100px, var(--star-medium), transparent),
+
+                /* LAYER 4: Mixed Medium/Large Stars (moveStarsLayer4) - 4 stars */
+                radial-gradient(4px 4px at 650px 250px, var(--star-large), transparent),
+                radial-gradient(3px 3px at 100px 100px, var(--star-medium), transparent),
+                radial-gradient(4px 4px at 550px 850px, var(--star-large), transparent),
+                radial-gradient(3px 3px at 200px 400px, var(--star-medium), transparent),
+
+                /* LAYER 5: Small White Stars (moveStarsLayer5) - 3 stars */
+                radial-gradient(2px 2px at 20px 30px, var(--star-small), transparent),
+                radial-gradient(2px 2px at 150px 150px, var(--star-small), transparent),
+                radial-gradient(2px 2px at 350px 650px, var(--star-small), transparent),
+                
+                /* LAYER 6: Smallest, Faintest, Deepest Stars (moveStarsLayer6) - 4 stars */
+                radial-gradient(1px 1px at 400px 350px, var(--star-small), transparent),
+                radial-gradient(1px 1px at 500px 50px, var(--star-small), transparent),
+                radial-gradient(1px 1px at 100px 400px, var(--star-small), transparent),
+                radial-gradient(1px 1px at 800px 100px, var(--star-small), transparent);
+            
+            /* Need 26 background-size entries (one for each gradient) */
+            background-size: 
+                800px 800px, 900px 900px, 750px 750px, 850px 850px, 950px 950px, /* Layer 1 (5) */
+                600px 600px, 650px 650px, 700px 700px, 550px 550px, 720px 720px, /* Layer 2 (5) */
+                500px 500px, 450px 450px, 480px 480px, 520px 520px, 580px 580px, /* Layer 3 (5) */
+                400px 400px, 420px 420px, 380px 380px, 350px 350px, /* Layer 4 (4) */
+                300px 300px, 320px 320px, 280px 280px, /* Layer 5 (3) */
+                200px 200px, 250px 250px, 180px 180px, 220px 220px; /* Layer 6 (4) */
+                
+            background-repeat: repeat; 
+
+            /* --- APPLYING THE ANIMATION (26 animations for 26 gradients) --- */
+            animation: 
+                /* Layer 1 (Fastest, Closest, 90s) */
+                moveStarsLayer1 10s linear infinite, moveStarsLayer1 10s linear infinite, moveStarsLayer1 10s linear infinite, moveStarsLayer1 10s linear infinite, moveStarsLayer1 10s linear infinite,
+                /* Layer 2 (Fast, 110s) */
+                moveStarsLayer2 20s linear infinite, moveStarsLayer2 20s linear infinite, moveStarsLayer2 20s linear infinite, moveStarsLayer2 20s linear infinite, moveStarsLayer2 20s linear infinite,
+                /* Layer 3 (Medium, 130s) */
+                moveStarsLayer3 30s linear infinite, moveStarsLayer3 30s linear infinite, moveStarsLayer3 30s linear infinite, moveStarsLayer3 30s linear infinite, moveStarsLayer3 30s linear infinite,
+                /* Layer 4 (Slower, 150s) */
+                moveStarsLayer4 40s linear infinite, moveStarsLayer4 40s linear infinite, moveStarsLayer4 40s linear infinite, moveStarsLayer4 40s linear infinite,
+                /* Layer 5 (Slow, 180s) */
+                moveStarsLayer5 50s linear infinite, moveStarsLayer5 50s linear infinite, moveStarsLayer5 50s linear infinite,
+                /* Layer 6 (Slowest, Deepest, 220s) */
+                moveStarsLayer6 60s linear infinite, moveStarsLayer6 60s linear infinite, moveStarsLayer6 60s linear infinite, moveStarsLayer6 50s linear infinite;
+            /* ------------------------------------------------------------------------ */
+
+            color: #e5e7eb; /* Off-white text */
+            transition: background-color 0.5s ease;
+        }
+        h1, h2, h3 {
+            /* Using system font stack instead of Orbitron */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            color: var(--color-accent); /* Primary Accent for titles */
+        }
+        /* Text used for highlighting in the Hero section */
+        .text-accent {
+            color: #ffffff; 
+        }
+        
+        /* Navigation Styles */
+        .nav-link {
+            transition: color 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+        .nav-link:hover {
+            color: var(--color-accent);
+            transform: translateY(-2px);
+        }
+        .nav-link.active {
+            color: var(--color-accent);
+            font-weight: 700;
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--color-accent);
+            border-radius: 1px;
+        }
+
+        /* Hero and Card Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-text {
+            animation: fadeIn 1s ease-out both;
+        }
+
+        .model-card {
+            animation: fadeIn 0.8s ease-out both;
+            opacity: 0;
+        }
+        
+        /* Apply delays to cards */
+        .model-card:nth-child(1) { animation-delay: 0.1s; }
+        .model-card:nth-child(2) { animation-delay: 0.2s; }
+        .model-card:nth-child(3) { animation-delay: 0.3s; }
+
+        /* Icon Pulse Effect */
+        .animated-icon {
+            text-shadow: 0 0 10px rgba(0, 180, 216, 0.5); /* Soft glow */
+        }
+
+        /* 3D Model Container */
+        .model-container {
+            width: 100%;
+            height: 400px;
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 180, 216, 0.2);
+            position: relative;
+            cursor: grab;
+        }
+
+        /* Custom Glow Effect for CTA Buttons */
+        .cta-glow-hover {
+            /* Ensure smooth transition for box-shadow */
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .cta-glow-hover:hover {
+            box-shadow: 0 0 15px rgba(0, 180, 216, 0.8), /* Cyan glow */
+                        0 0 30px rgba(0, 180, 216, 0.4);
+        }
+    </style>
+    <script>
+
+        // --- DATA MODEL ---
+        const DATA = {
+            activeSection: 'home',
+            starlinkInfo: {
+                totalSatellites: '6,000+ Deployed', 
+                speed: '100+ - 200+ Mbps',
+                coverage: 'Global (100+ Countries)', 
+                latency: '20-40 ms (Median)',
+                stats: [
+                    { label: "Satellites Launched", value: "6,000+", icon: "🛰️" },
+                    { label: "Active Users", value: "3M+", icon: "🧑‍🤝‍🧑" },
+                    { label: "Countries Served", value: "100+", icon: "🌐" }, 
+                    { label: "Altitude", value: "550 km (LEO)", icon: "⬆️" }, 
+                ],
+                architecture: [
+                    { icon: '📡', title: 'User Terminal ("Dishy")', desc: 'Advanced phased array antenna that automatically aligns to receive the best signal from overhead satellites.' },
+                    { icon: '🌌', title: 'Low Earth Orbit (LEO)', desc: 'Satellites orbit at ~550 km, significantly closer than geostationary, ensuring low latency crucial for real-time applications.' },
+                    { icon: '📱', title: 'Direct-to-Cell Capability', desc: 'Future satellites will include a cellular payload to provide connectivity to standard mobile phones, eliminating dead zones.' },
+                ],
+                services: [
+                    { icon: '🏠', title: 'Residential', desc: 'Standard service for fixed-location home use, the most common offering.' },
+                    { icon: '🚢', title: 'Mobility (RV/Maritime)', desc: 'Designed for use on boats, RVs, and moving vehicles, ensuring connectivity on the go across continents.' },
+                    { icon: '🏢', title: 'Business', desc: 'High-performance, prioritized service for enterprise customers and high-demand applications, offering faster speeds.' },
+                ]
+            },
+            starshipSpecs: {
+                totalHeight: '121 m (397 ft)',
+                diameter: '9 m (30 ft)',
+                propellant: 'Liquid Oxygen / Methane (LOX/CH₄)',
+                propellantMass: '4,600 t (10.1M lb)', 
+                thrust: '7,590 tf (16.7M lbf)', 
+                payloadLEO: '100 - 150 t', 
+                engines: '33 Raptor (Booster) + 6 Raptor (Ship)',
+                crewCapacity: 'Up to 100 occupants',
+                waterConsumables: 'Recycled, ~3 kg/crew/day makeup',
+                reuseGoal: 'Full and Rapid Reusability',
+            },
+            futureConcepts: [
+                { icon: "🚀", title: "Interplanetary Transport", desc: "Starship is designed to carry up to 100 people to Mars, making life multi-planetary." },
+                { icon: "🏗️", title: "Orbital Fueling", desc: "Propellant transfer in orbit is critical for deep-space missions and fully reusable launches." },
+                { icon: "🌑", title: "Lunar Base (Artemis)", desc: "Landing the Human Landing System variant for NASA's Artemis missions to return to the Moon." },
+            ],
+            missionPhases: [
+                { icon: '🌎', title: 'Launch & Ascent', desc: 'Starship launches atop the Super Heavy Booster, reaching Low Earth Orbit (LEO).' },
+                { icon: '⛽', title: 'Orbital Refueling', desc: 'Multiple Starship Tanker flights refuel the primary Starship in LEO for long-duration missions.' },
+                { icon: '🪐', title: 'Trans-Mars Injection', desc: 'The fueled Starship performs a long burn to escape Earth orbit and begin the journey to Mars.' },
+                { icon: '🔴', title: 'Mars Landing', desc: 'Aerodynamic braking followed by a powered vertical landing on the Martian surface.' },
+            ],
+            missionTimeline: [
+                { year: 2010, event: "First Falcon 9 Flight", desc: "Maiden flight of the Falcon 9 rocket, successfully reaching orbit." },
+                { year: 2012, event: "Dragon COTS-2 Mission", desc: "First commercial spacecraft to visit the International Space Station (ISS)." },
+                { year: 2015, event: "Falcon 9 First Booster Landing", desc: "Successful landing of a Falcon 9 booster at Landing Zone 1, marking the start of reusability." },
+                { year: 2017, event: "First Falcon Heavy Launch", desc: "Successful demonstration of the world's most powerful operational rocket, launching a Tesla Roadster." },
+                { year: 2018, event: "Falcon 9 Block 5 Debut", desc: "Introduction of the final, most reusable iteration of the Falcon 9." },
+                { year: 2019, event: "Starhopper Test Flights", desc: "Initial low-altitude hops of the Starship test vehicle using a single Raptor engine." },
+                { year: 2020, event: "Starship SN5 Hop Test", desc: "Successful 150m low-altitude hop of a full-scale prototype, validating landing and flight software." },
+                { year: 2020, event: "Starship SN6 Hop Test", desc: "Second successful 150m hop test, demonstrating consistency and rapid reuse capability of the design." },
+                { year: 2020, event: "First Crew Dragon Mission (Demo-2)", desc: "First crewed flight of Dragon, restoring human spaceflight capability to the US." },
+                { year: 2020, event: "Starlink Service Beta Launch", desc: "Initial public beta testing of the Starlink satellite internet service began in select regions." },
+                { year: 2020, event: "Starship SN8 High-Altitude Flight", desc: "First successful high-altitude flight (12.5 km) demonstrating the 'belly flop' atmospheric maneuver." },
+                { year: 2020, event: "Starship SN9 High-Altitude Flight", desc: "High-altitude flight (10 km) that demonstrated successful aerodynamic control, but failed landing flip maneuver." },
+                { year: 2021, event: "Starship SN10 High-Altitude Flight", desc: "Achieved the first successful soft landing following the high-altitude maneuver, though the vehicle was lost shortly after." },
+                { year: 2021, event: "Starship SN11 High-Altitude Flight", desc: "High-altitude test that ended in rapid disassembly during the descent phase due to an engine issue." },
+                { year: 2021, event: "Starship SN15 Final Prototype Flight", desc: "First successful high-altitude flight, descent, and soft landing with the vehicle remaining intact and reusable." },
+                { year: 2021, event: "Inspiration4 Mission", desc: "First all-civilian crew to orbit Earth on a Crew Dragon spacecraft." },
+                { year: 2022, event: "Starlink V2 Satellites Deployed", desc: "Began deploying larger, more capable V2 satellites to enhance network capacity." },
+                { year: 2022, event: "Record Launch Year", desc: "Completed 61 successful orbital launches, setting a record for the most orbital launches by a single company in one calendar year." },
+                { year: 2023, event: "Starship Integrated Flight Test 1 (IFT-1)", desc: "First launch of the fully integrated Starship and Super Heavy stack. Lost during stage separation." },
+                { year: 2023, event: "Starship Integrated Flight Test 2 (IFT-2)", desc: "Achieved successful hot-staging separation and Starship reached space before being lost." },
+                { year: 2024, event: "Starship Integrated Flight Test 3 (IFT-3)", desc: "Reached orbital insertion velocity goal, demonstrated payload door operation, and survived atmospheric re-entry for an extended period." },
+                { year: 2024, event: "Starship Integrated Flight Test 4 (IFT-4)", desc: "First successful high-velocity atmospheric re-entry and controlled splashdown test of the Starship vehicle." },
+                { year: 2024, event: "Starship Integrated Flight Test 5 (IFT-5)", desc: "Achieved near-full orbital trajectory and demonstrated the critical in-space engine relight capability." },
+                { year: 2025, event: "Starship Integrated Flight Test 6 (IFT-6)", desc: "First attempt at a soft ocean landing of the Super Heavy Booster, practicing the 'catch' maneuver recovery sequence." },
+                { year: 2025, event: "Starship Integrated Flight Test 7 (IFT-7)", desc: "Successful soft water splashdown recovery of both the Super Heavy Booster and the Starship vehicle." },
+                { year: 2025, event: "Starship Integrated Flight Test 8 (IFT-8)", desc: "Demonstration of the first fully reusable test mission, proving rapid turnaround capability between flights." },
+                { year: 2025, event: "Starship Integrated Flight Test 9 (IFT-9)", desc: "Inaugural flight of the Starship Tanker variant, validating fluid transfer systems for future orbital refueling." },
+                { year: 2025, event: "Starship Integrated Flight Test 10 (IFT-10)", desc: "First crewed-rated prototype flight carrying internal life support systems and dummy cargo for testing." },
+                { year: 2025, event: "Starship Integrated Flight Test 11 (IFT-11)", desc: "Demonstrated orbital propellant, last flight of a Block 2 Starship vehicle, also the critical step for deep-space missions." },
+                { year: 2024, event: "Starlink Direct-to-Cell Demonstration", desc: "First successful test of Starlink connectivity directly to an unmodified smartphone." },
+                { year: 2026, event: "Artemis III Lunar HLS Contract", desc: "Starship Human Landing System selected by NASA for the next crewed lunar landing mission." },
+                { year: "Future", event: "First Human Flight of Starship", desc: "First flight carrying passengers beyond Low Earth Orbit, paving the way for the Mars missions." },
+                { year: "Future", event: "Mars Cargo Pathfinder", desc: "Initial unmanned cargo missions to Mars to pre-position vital supplies and infrastructure." },
+            ],
+            starshieldInfo: {
+                mission: 'Government and National Security Missions',
+                focus: 'Secure Satellites, Global Military Communications',
+                satellites: 'Dedicated, encrypted, and specialized Starlink derivatives.'
+            },
+            // UPDATED: Mission Statistics
+            missionStats: [
+                { label: 'COMPLETED MISSIONS', value: 555 },
+                { label: 'TOTAL LANDINGS', value: 516 },
+                { label: 'TOTAL REFLIGHTS', value: 480 }
+            ]
+        };
+
+        // --- DOM MANIPULATION UTILITIES ---
+
+        /** Creates a new DOM element with classes and returns it. */
+        const createEl = (tag, classList = '') => {
+            const el = document.createElement(tag);
+            if (classList) el.className = classList;
+            return el;
+        };
+
+        const navigateTo = (sectionName) => {
+            DATA.activeSection = sectionName;
+            
+            // Clear existing content (except the <noscript> safety content)
+            const body = document.body;
+            while (body.children.length > 0) {
+                const child = body.children[0];
+                if (child.tagName.toLowerCase() !== 'noscript') {
+                    body.removeChild(child);
+                } else {
+                    // Temporarily hide the noscript block while content is being rendered
+                    child.style.display = 'none';
+                }
+            }
+
+
+            let sectionElement;
+            switch (sectionName) {
+                case 'home':
+                    sectionElement = renderHomeSection();
+                    break;
+                case 'starship':
+                    sectionElement = renderStarshipSection();
+                    // NEW: Initialize 3D model only on this section
+                    setTimeout(() => {
+                        starshipCanvas = document.getElementById('starship-canvas');
+                        if (starshipCanvas) {
+                            initStarshipModelScene();
+                            animate();
+                        }
+                    }, 50); 
+                    break;
+                case 'starlink':
+                    sectionElement = renderStarlinkSection();
+                    break;
+                case 'timeline':
+                    sectionElement = renderTimelineSection();
+                    break;
+                case 'marsvision':
+                    sectionElement = renderMarsVisionSection();
+                    break;
+                case 'starshield':
+                    sectionElement = renderStarshieldSection();
+                    break;
+                case 'itworld':
+                    sectionElement = renderITWorldRevolutionSection();
+                    break;
+                case 'missions': 
+                    sectionElement = renderMissionsSection();
+                    break;
+                default:
+                    sectionElement = renderHomeSection();
+            }
+
+            // Append the navigation and the new section to the body
+            document.body.appendChild(renderHeader());
+            document.body.appendChild(sectionElement);
+            
+            // NEW: Trigger counter animation for missions section
+            if (sectionName === 'missions') {
+                setTimeout(() => {
+                    document.querySelectorAll('.counter-value').forEach(el => {
+                        const target = parseInt(el.dataset.target);
+                        animateNumber(el, target);
+                    });
+                }, 100); 
+            }
+        
+            // Update active state of nav links
+            updateNavActiveState(sectionName);
+
+            // Scroll back to the top of the page after content is loaded.
+            window.scrollTo(0, 0); 
+        };
+
+        /** Updates the 'active' class on navigation links. */
+        const updateNavActiveState = (activeSection) => {
+            // Wait for header to be rendered if it wasn't already
+            setTimeout(() => {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    if (link.dataset.section === activeSection) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }, 50);
+        };
+
+        // NEW: Animation function for numbers
+        const animateNumber = (element, targetNumber) => {
+            let start = 0;
+            const duration = 2000; // 2 seconds
+            let startTime = null; 
+
+            const step = (currentTime) => {
+                if (!startTime) startTime = currentTime;
+                const progress = Math.min((currentTime - startTime) / duration, 1);
+                // Use Math.floor and toLocaleString for formatting
+                element.textContent = Math.floor(progress * targetNumber).toLocaleString();
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    element.textContent = targetNumber.toLocaleString(); // Ensure final value is exact
+                }
+            };
+
+            requestAnimationFrame(step);
+        };
+
+        // --- RENDER FUNCTIONS (Same as before) ---
+        const renderHeader = () => {
+            const header = createEl('header', 'sticky top-0 z-10 bg-gray-900 bg-opacity-95 backdrop-blur-sm shadow-xl p-4 border-b border-gray-800');
+            const nav = createEl('nav', 'max-w-7xl mx-auto flex justify-between items-center');
+
+            // Logo/Title
+            const logo = createEl('h1', 'text-2xl font-bold text-white');
+            logo.innerHTML = 'SPACE<span class="text-accent">X</span>';
+
+            // Navigation Links
+            const ul = createEl('ul', 'flex space-x-3 sm:space-x-4 lg:space-x-4 text-xs sm:text-base'); 
+            const links = [
+                { name: 'Home', section: 'home' },
+                { name: 'Missions', section: 'missions' }, 
+                { name: 'Starship', section: 'starship' },
+                { name: 'Starlink', section: 'starlink' },
+                { name: 'Starshield', section: 'starshield' }, 
+                { name: 'Timeline', section: 'timeline' },
+                { name: 'Mars Vision', section: 'marsvision' },
+                { name: 'IT\u00A0World', section: 'itworld' } 
+            ];
+
+            links.forEach(linkData => {
+                const li = createEl('li');
+                const a = createEl('a', 'nav-link text-md lg:text-md text-gray-300 hover:text-white cursor-pointer'); 
+                a.textContent = linkData.name;
+                a.dataset.section = linkData.section;
+                // Use a closure to capture linkData.section
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    navigateTo(linkData.section);
+                };
+                li.appendChild(a);
+                ul.appendChild(li);
+            });
+
+            nav.append(logo, ul);
+            header.appendChild(nav);
+            return header;
+        };
+
+        const renderHomeSection = () => {
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-7xl mx-auto');
+
+            // Hero Section
+            const hero = createEl('div', 'text-center py-20 lg:py-32');
+
+            const h1 = createEl('h1', 'text-5xl md:text-7xl font-extrabold mb-4 hero-text');
+            h1.textContent = 'The Revolution';
+            h1.style.animationDelay = '0s';
+
+            const h2 = createEl('h2', 'text-3xl md:text-5xl font-extrabold mb-6 hero-text');
+            h2.innerHTML = `Pioneering the Future of <span class="text-accent">Space Travel</span>`;
+            h2.style.animationDelay = '0.2s';
+
+            const p = createEl('p', 'text-xl text-gray-400 max-w-4xl mx-auto mb-10 hero-text');
+            p.textContent = "SpaceX is designing, manufacturing and launching advanced rockets and spacecraft. The company was founded in 2002 to revolutionize space technology, with the ultimate goal of enabling people to live on other planets.";
+            p.style.animationDelay = '0.4s';
+
+            // Button with glow hover
+            const ctaButton = createEl('button', 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition duration-300 hover:scale-105 hero-text cta-glow-hover');
+            ctaButton.textContent = 'Explore Starship Missions';
+            ctaButton.onclick = () => navigateTo('starship');
+            ctaButton.style.animationDelay = '0.6s';
+
+            hero.append(h1, h2, p, ctaButton);
+
+            // Facts Section
+            const facts = createEl('div', 'grid grid-cols-1 md:grid-cols-3 gap-10 mt-16');
+
+            const factData = [
+                { icon: '🌎', title: 'Life Multi-planetary', text: 'Developing Starship to enable humans to live on Mars and beyond.' },
+                { icon: '🛰️', title: 'Global Internet', text: 'Operating Starlink, the largest satellite constellation for global broadband access.' },
+                { icon: '♻️', title: 'Full Reusability', text: 'Leading the industry with reusable orbital class rockets (Falcon 9 and Starship).' }
+            ];
+
+            factData.forEach((fact, index) => {
+                const card = createEl('div', 'p-6 bg-gray-900 rounded-xl shadow-2xl space-y-3 model-card');
+                card.style.animationDelay = `${0.8 + index * 0.2}s`;
+
+                const icon = createEl('div', 'text-4xl mb-2');
+                icon.textContent = fact.icon;
+
+                const title = createEl('h3', 'text-xl font-bold text-white');
+                title.textContent = fact.title;
+
+                const text = createEl('p', 'text-gray-400');
+                text.textContent = fact.text;
+
+                card.append(icon, title, text);
+                facts.appendChild(card);
+            });
+
+
+            section.append(hero, facts);
+            return section;
+        };
+
+        // NEW: Render Missions Section
+        const renderMissionsSection = () => {
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-7xl mx-auto');
+
+            const h1 = createEl('h1', 'text-5xl md:text-6xl text-center font-extrabold mb-4');
+            h1.textContent = 'SpaceX Missions Overview';
+            
+            const pHeader = createEl('p', 'text-center text-xl text-gray-400 max-w-4xl mx-auto mb-12');
+            pHeader.textContent = "Showcasing SpaceX's impressive track record of successful launches, landings, and rocket reusability, demonstrating their commitment to making life multi-planetary.";
+
+            const statsContainer = createEl('div', 'grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 text-center');
+
+            DATA.missionStats.forEach(stat => {
+                const statCard = createEl('div', 'p-6 bg-gray-900 rounded-xl shadow-2xl space-y-3 flex flex-col justify-center items-center');
+                
+                // key for the counter animation to target
+                const valueEl = createEl('div', 'counter-value text-7xl font-extrabold text-white leading-none');
+                valueEl.dataset.target = stat.value; // Store target value for animation
+                valueEl.textContent = '0'; // Initial value for animation
+                
+                const labelEl = createEl('p', 'text-gray-400 text-lg uppercase tracking-wider mt-2');
+                labelEl.textContent = stat.label;
+
+                statCard.append(valueEl, labelEl);
+                statsContainer.appendChild(statCard);
+            });
+
+            // Optional: Add more content here if desired, e.g., a timeline of specific missions.
+            const additionalInfo = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-800 mt-12');
+            const additionalTitle = createEl('h2', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            additionalTitle.textContent = 'Impact of Reusability';
+            const additionalText = createEl('p', 'text-gray-400 leading-relaxed');
+            additionalText.innerHTML = `
+                The high number of total landings and reflights highlights SpaceX's groundbreaking success in rocket reusability. 
+                This innovation drastically reduces the cost of space access, allowing for more frequent launches and making ambitious projects like Starlink and Starship economically viable. 
+                Reusability is a cornerstone of SpaceX's mission to make humanity multi-planetary.
+            `;
+            additionalInfo.appendChild(additionalText);
+
+
+            section.append(h1, pHeader, statsContainer, additionalInfo);
+            return section;
+        };
+
+        const renderStarlinkSection = () => {
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-7xl mx-auto');
+
+            const h2 = createEl('h2', 'text-4xl md:text-5xl text-center font-extrabold mb-4');
+            h2.textContent = 'Starlink: Global Satellite Internet';
+
+            const p = createEl('p', 'text-center text-xl text-gray-400 max-w-3xl mx-auto mb-12');
+            p.textContent = "Starlink is a satellite internet constellation designed to deliver high-speed, low-latency broadband to remote and rural locations globally. It is the world's largest operational satellite network.";
+
+            // --- Stats Grid ---
+            const statsContainer = createEl('div', 'grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16');
+            DATA.starlinkInfo.stats.forEach(stat => {
+                const card = createEl('div', 'p-6 bg-gray-900 rounded-xl shadow-2xl text-center transition duration-300 hover:bg-gray-800 space-y-2 model-card');
+
+                const icon = createEl('span', 'text-4xl block');
+                icon.textContent = stat.icon;
+
+                const value = createEl('div', 'text-3xl font-bold text-white');
+                value.textContent = stat.value;
+
+                const label = createEl('p', 'text-gray-400 text-sm uppercase tracking-wider');
+                label.textContent = stat.label;
+
+                card.append(icon, value, label);
+                statsContainer.appendChild(card);
+            });
+
+            // --- Key Performance Indicators Section ---
+            const kpiContainer = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl mb-12');
+            const kpiTitle = createEl('h3', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            kpiTitle.textContent = 'Key Performance Indicators';
+
+            const kpis = [
+                { icon: '⚡', title: 'High Speed', value: DATA.starlinkInfo.speed, desc: 'Capable of handling streaming, online gaming, and video calls.' },
+                { icon: '⏱️', title: 'Low Latency', value: DATA.starlinkInfo.latency, desc: 'Crucial for real-time applications, achieved by satellites in Low Earth Orbit (LEO).' },
+                { icon: '🗺️', title: 'True Global Coverage', value: DATA.starlinkInfo.coverage, desc: 'Coverage extends to areas where traditional internet is non-existent or unreliable.' },
+                { icon: '📡', title: 'Phased Array Antenna', value: 'Advanced Dish', desc: 'Self-orienting and easy to set up for fast deployment.' }
+            ];
+            
+            const kpiGrid = createEl('div', 'grid grid-cols-1 md:grid-cols-2 gap-8');
+
+            kpis.forEach(kpi => {
+                const item = createEl('div', 'flex space-x-4 items-start');
+
+                const icon = createEl('div', 'text-3xl flex-shrink-0');
+                icon.textContent = kpi.icon;
+
+                const textContent = createEl('div');
+                const title = createEl('h4', 'text-xl font-semibold text-white');
+                title.textContent = `${kpi.title}: ${kpi.value}`;
+
+                const desc = createEl('p', 'text-gray-400');
+                desc.textContent = kpi.desc;
+
+                textContent.append(title, desc);
+                item.append(icon, textContent);
+                kpiGrid.appendChild(item);
+            });
+
+            kpiContainer.append(kpiTitle, kpiGrid);
+
+            // --- System Architecture Section ---
+            const archContainer = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl mb-12');
+            const archTitle = createEl('h3', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            archTitle.textContent = 'System Architecture & Innovations';
+            
+            const archGrid = createEl('div', 'grid grid-cols-1 md:grid-cols-3 gap-8');
+
+            DATA.starlinkInfo.architecture.forEach(arch => {
+                const item = createEl('div', 'space-y-2');
+                const icon = createEl('div', 'text-4xl text-accent');
+                icon.textContent = arch.icon;
+                const title = createEl('h4', 'text-xl font-semibold text-white');
+                title.textContent = arch.title;
+                const desc = createEl('p', 'text-gray-400 text-sm');
+                desc.textContent = arch.desc;
+
+                item.append(icon, title, desc);
+                archGrid.appendChild(item);
+            });
+
+            archContainer.append(archTitle, archGrid);
+
+            // --- Service Tiers Section ---
+            const servicesContainer = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl');
+            const servicesTitle = createEl('h3', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            servicesTitle.textContent = 'Starlink Service Tiers';
+            
+            const servicesGrid = createEl('div', 'grid grid-cols-1 md:grid-cols-3 gap-8');
+
+            DATA.starlinkInfo.services.forEach(service => {
+                const item = createEl('div', 'space-y-2');
+                const icon = createEl('div', 'text-4xl text-accent');
+                icon.textContent = service.icon;
+                const title = createEl('h4', 'text-xl font-semibold text-white');
+                title.textContent = service.title;
+                const desc = createEl('p', 'text-gray-400 text-sm');
+                desc.textContent = service.desc;
+
+                item.append(icon, title, desc);
+                servicesGrid.appendChild(item);
+            });
+
+            servicesContainer.append(servicesTitle, servicesGrid);
+
+            section.append(h2, p, statsContainer, kpiContainer, archContainer, servicesContainer);
+            return section;
+        };
+
+        // RENDER: IT WORLD REVOLUTION SECTION
+        const renderITWorldRevolutionSection = () => {
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-4xl mx-auto');
+
+            const h1 = createEl('h1', 'text-5xl md:text-6xl text-center font-extrabold mb-4');
+            h1.textContent = 'The Revolution of the IT World';
+            
+            const pHeader = createEl('p', 'text-center text-xl text-gray-400 max-w-4xl mx-auto mb-12');
+            pHeader.textContent = "The speed of space development is no longer limited by materials, but by information flow. Modern launch programs depend entirely on a global, high-speed IT backbone for design, simulation, and communication.";
+
+            // --- Pillars of IT-Driven Spaceflight ---
+            const pillarsCard = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl mb-12 border border-gray-800');
+            const pillarsTitle = createEl('h2', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            pillarsTitle.textContent = 'Pillars of IT-Driven Spaceflight';
+
+            const pillarsContent = [
+                { icon: '💻', title: 'Data-Driven Design', desc: 'Engineers rely on massive simulation and fluid dynamics models (CFD) executed on high-performance computing clusters to iterate rocket designs digitally before building them.' },
+                { icon: '📡', title: 'Global Connectivity', desc: 'Starlink provides the necessary high-speed, low-latency link between launch sites, manufacturing facilities, and ground stations, enabling real-time mission control worldwide.' },
+                { icon: '🏭', title: 'Automated Manufacturing', desc: 'Digital twins, advanced robotics, and rapid 3D printing (Additive Manufacturing) shorten the build cycle from years to weeks, directly supported by agile software pipelines.' },
+            ];
+
+            const pillarsGrid = createEl('div', 'grid grid-cols-1 md:grid-cols-3 gap-8');
+
+            pillarsContent.forEach(point => {
+                const card = createEl('div', 'p-4 bg-gray-800 rounded-lg shadow-md hover:bg-gray-700 transition duration-300 space-y-2');
+                const icon = createEl('span', 'text-4xl block mb-2 text-accent');
+                icon.textContent = point.icon;
+                const title = createEl('h4', 'text-xl font-semibold text-white');
+                title.textContent = point.title;
+                const desc = createEl('p', 'text-gray-400 text-sm');
+                desc.textContent = point.desc;
+
+                card.append(icon, title, desc);
+                pillarsGrid.appendChild(card);
+            });
+            pillarsCard.append(pillarsTitle, pillarsGrid);
+
+            // --- Rapid Iteration Cycle ---
+            const cycleCard = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-800');
+            const cycleTitle = createEl('h2', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            cycleTitle.textContent = 'The IT-Enabled Iteration Cycle';
+            
+            const steps = [
+                { step: 1, title: 'Test (Failures)', desc: 'Real-world flight test data is instantly streamed back to engineering teams via satellite connections.' },
+                { step: 2, title: 'Analyze (Data)', desc: 'Gigabytes of flight and component telemetry are fed into software models for immediate post-flight failure analysis.' },
+                { step: 3, title: 'Design (Software)', desc: 'Engineers use the analysis to quickly update CAD models and code, generating new manufacturing instructions in days.' },
+                { step: 4, title: 'Build (Hardware)', desc: 'The improved design is sent directly to the production floor, starting the build of the next prototype.' },
+            ];
+
+            const stepsContainer = createEl('div', 'grid grid-cols-1 md:grid-cols-4 gap-4');
+            
+            steps.forEach(item => {
+                const stepEl = createEl('div', 'p-4 bg-gray-800 rounded-xl flex-1 shadow-inner hover:shadow-accent transition duration-300 space-y-2');
+                const stepNum = createEl('div', 'text-sm font-bold uppercase text-blue-400 mb-1');
+                stepNum.textContent = `Cycle Step ${item.step}`;
+
+                const stepTitle = createEl('h4', 'text-xl font-extrabold text-white');
+                stepTitle.textContent = item.title;
+
+                const stepDesc = createEl('p', 'text-gray-400 text-xs');
+                stepDesc.textContent = item.desc;
+
+                stepEl.append(stepNum, stepTitle, stepDesc);
+                stepsContainer.appendChild(stepEl);
+            });
+
+            cycleCard.append(cycleTitle, stepsContainer);
+
+            section.append(h1, pHeader, pillarsCard, cycleCard);
+            return section;
+        };
+
+        // RENDER: STARSHIELD SECTION
+        const renderStarshieldSection = () => {
+            const shieldInfo = DATA.starshieldInfo;
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-7xl mx-auto');
+
+            const h1 = createEl('h1', 'text-5xl md:text-6xl text-center font-extrabold mb-4');
+            h1.textContent = 'Starshield: Government & Defense';
+            
+            const pHeader = createEl('p', 'text-center text-xl text-gray-400 max-w-4xl mx-auto mb-12');
+            pHeader.textContent = "Starshield leverages SpaceX’s Starlink technology to provide secure, high-speed, end-to-end communication and data transfer capabilities exclusively for government and national security customers.";
+
+            // --- Key Focus Points ---
+            const focusCard = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl mb-12 border border-gray-800');
+            const focusTitle = createEl('h2', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            focusTitle.textContent = 'Pillars of Starshield';
+
+            const focusPoints = [
+                { icon: '🔒', title: 'Secure Communications', desc: 'Providing highly encrypted and resilient connectivity for sensitive government operations globally.' },
+                { icon: '📡', title: 'Earth Observation', desc: 'Capability for hosting and deploying various Earth observation payloads, including sensor satellites.' },
+                { icon: '🛡️', title: 'National Security', desc: 'Focus on global military and defense applications, ensuring continuous, reliable service in contested environments.' },
+            ];
+
+            const focusGrid = createEl('div', 'grid grid-cols-1 md:grid-cols-3 gap-8');
+
+            focusPoints.forEach(point => {
+                const card = createEl('div', 'p-4 bg-gray-800 rounded-lg shadow-md hover:bg-gray-700 transition duration-300 space-y-2 text-center');
+                const icon = createEl('span', 'text-4xl block mb-2 text-red-400');
+                icon.textContent = point.icon;
+                const title = createEl('h4', 'text-xl font-semibold text-white');
+                title.textContent = point.title;
+                const desc = createEl('p', 'text-gray-400 text-sm');
+                desc.textContent = point.desc;
+
+                card.append(icon, title, desc);
+                focusGrid.appendChild(card);
+            });
+            focusCard.append(focusTitle, focusGrid);
+
+            // --- Technology Comparison ---
+            const techCard = createEl('div', 'bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-800');
+            const techTitle = createEl('h2', 'text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            techTitle.textContent = 'Technology & Separation from Starlink';
+            
+            const techGrid = createEl('dl', 'grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12');
+            
+            const techData = [
+                { label: 'Network Separation', value: 'Physically and virtually separate network tailored for national security requirements.', icon: '🌐' },
+                { label: 'Payload Hosting', value: 'Satellites include standard interfaces to host specialized customer payloads.', icon: '⚙️' },
+                { label: 'Security', value: 'High-level encryption and advanced threat mitigation features built-in.', icon: '🔑' },
+                { label: 'Satellite Type', value: shieldInfo.satellites, icon: '🛰️' },
+            ];
+
+            techData.forEach(item => {
+                const container = createEl('div', 'space-y-1');
+                const dt = createEl('dt', 'text-lg font-semibold text-accent flex items-center');
+                dt.innerHTML = `<span class="text-2xl mr-3">${item.icon}</span>${item.label}`;
+                
+                const dd = createEl('dd', 'text-gray-400 ml-9');
+                dd.textContent = item.value;
+
+                container.append(dt, dd);
+                techGrid.appendChild(container);
+            });
+
+            techCard.append(techTitle, techGrid);
+
+            section.append(h1, pHeader, focusCard, techCard);
+            return section;
+        };
+
+        const renderTimelineSection = () => {
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-3xl mx-auto');
+            
+            const h2 = createEl('h2', 'text-4xl md:text-5xl text-center font-extrabold mb-4');
+            h2.textContent = 'Mission Timeline & Milestones';
+
+            const p = createEl('p', 'text-center text-lg text-gray-400 max-w-2xl mx-auto mb-12');
+            p.textContent = "A chronological look at the most significant milestones and upcoming objectives for SpaceX's major programs.";
+
+            const timelineContainer = createEl('div', 'relative border-l-4 border-gray-700 space-y-12 pl-6 pt-2');
+
+            DATA.missionTimeline.forEach(item => {
+                const timelineItem = createEl('div', 'relative model-card');
+                
+                // Timeline marker (the dot)
+                const marker = createEl('div', 'absolute w-4 h-4 bg-blue-500 rounded-full -left-8 top-1 transform ring-4 ring-gray-900 shadow-xl');
+                
+                const year = createEl('div', 'text-sm font-semibold uppercase text-cyan-400');
+                year.textContent = item.year;
+
+                const eventTitle = createEl('h3', 'text-2xl font-bold text-white mt-1');
+                eventTitle.textContent = item.event;
+                
+                const desc = createEl('p', 'text-gray-400 mt-2');
+                desc.textContent = item.desc;
+
+                timelineItem.append(marker, year, eventTitle, desc);
+                timelineContainer.appendChild(timelineItem);
+            });
+
+            section.append(h2, p, timelineContainer);
+            return section;
+        };
+
+        // RENDER: MARS VISION SECTION
+        const renderMarsVisionSection = () => {
+            const specs = DATA.starshipSpecs;
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-7xl mx-auto');
+
+            const h1 = createEl('h1', 'text-5xl md:text-6xl text-center font-extrabold mb-4');
+            h1.textContent = 'The Ultimate Goal: Mars Vision';
+            
+            const pHeader = createEl('p', 'text-center text-xl text-gray-400 max-w-4xl mx-auto mb-12');
+            pHeader.textContent = "The Starship program is not just about cheaper launches; it is a dedicated vehicle for humanity's expansion beyond Earth and the foundation for a permanent Martian colony.";
+
+            // --- Mission Profile Section ---
+            const phasesCard = createEl('div', 'bg-gray-900 p-6 rounded-xl shadow-2xl mb-12 border border-gray-800');
+            const phasesTitle = createEl('h2', 'text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            phasesTitle.textContent = 'Mission Profile: The Journey to Mars';
+            
+            const phasesGrid = createEl('div', 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6');
+            
+            DATA.missionPhases.forEach((phase, index) => {
+                const phaseItem = createEl('div', 'p-4 bg-gray-800 rounded-lg shadow-md hover:bg-gray-700 transition duration-300');
+                
+                const icon = createEl('span', 'text-3xl block mb-2');
+                icon.textContent = phase.icon;
+                
+                const title = createEl('h4', 'text-xl font-semibold text-white');
+                title.textContent = phase.title;
+                
+                const desc = createEl('p', 'text-gray-400 text-sm mt-1');
+                desc.textContent = phase.desc;
+                
+                phaseItem.append(icon, title, desc);
+                phasesGrid.appendChild(phaseItem);
+            });
+            
+            phasesCard.append(phasesTitle, phasesGrid);
+
+            // --- Starship Crew/Consumables Specs ---
+            const specsCard = createEl('div', 'bg-gray-900 p-6 rounded-xl shadow-2xl mb-12 border border-gray-800');
+            const specsTitle = createEl('h2', 'text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            specsTitle.textContent = 'Starship Life Support & Transport Goals';
+
+            const specsData = [
+                { label: 'Crew Capacity', value: specs.crewCapacity, icon: '🧑‍🚀' }, 
+                { label: 'Water Consumables', value: specs.waterConsumables, icon: '💧' },
+                { label: 'Reusability Goal', value: specs.reuseGoal, icon: '🔄' },
+                { label: 'Interplanetary Use', value: 'Cargo/Crew Transport', icon: '🪐' }, 
+            ];
+            
+            const specsGrid = createEl('dl', 'grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4 text-center');
+
+            specsData.forEach(item => {
+                // Label (dt)
+                const dt = createEl('dt', 'text-gray-400 text-sm uppercase tracking-wider col-span-1 border-r border-gray-800 pr-4 md:text-left text-center');
+                dt.innerHTML = `<span class="text-xl inline-block mr-2">${item.icon}</span>${item.label}`;
+                
+                // Value (dd)
+                const dd = createEl('dd', 'text-white font-semibold text-lg col-span-1 pl-4 md:text-left text-center');
+                dd.textContent = item.value;
+
+                specsGrid.append(dt, dd);
+            });
+            
+            specsCard.append(specsTitle, specsGrid);
+
+            // --- Future Concepts ---
+            const h2 = createEl('h2', 'text-3xl md:text-4xl text-center font-bold mb-6 mt-12');
+            h2.textContent = 'Key Pillars of Colonization';
+
+            const grid = createEl('div', 'grid grid-cols-1 md:grid-cols-3 gap-8');
+
+            DATA.futureConcepts.forEach(concept => {
+                const card = createEl('div', 'p-6 bg-gray-900 rounded-xl shadow-2xl transition duration-300 hover:bg-gray-800 space-y-4 model-card');
+                
+                const icon = createEl('span', 'text-6xl block mb-2 animated-icon');
+                icon.textContent = concept.icon;
+
+                const title = createEl('h3', 'text-2xl font-bold text-white');
+                title.textContent = concept.title;
+                
+                const desc = createEl('p', 'text-gray-400');
+                desc.textContent = concept.desc;
+
+                card.append(icon, title, desc);
+                grid.appendChild(card);
+            });
+            
+            section.append(h1, pHeader, phasesCard, specsCard, h2, grid);
+            return section;
+        }
+
+        const renderStarshipSection = () => {
+            const specs = DATA.starshipSpecs;
+            const section = createEl('section', 'min-h-screen pt-20 px-4 pb-12 max-w-7xl mx-auto');
+
+            const h1 = createEl('h1', 'text-5xl md:text-6xl text-center font-extrabold mb-4');
+            h1.textContent = 'Starship Program';
+            
+            const pHeader = createEl('p', 'text-center text-xl text-gray-400 max-w-3xl mx-auto mb-8');
+            pHeader.textContent = "Starship is SpaceX's fully reusable launch and space system designed to carry both crew and cargo to Earth orbit and beyond. Try dragging the model below!"; 
+            
+            // --- 3D Model Container (Restored) ---
+            const modelContainer = createEl('div', 'model-container relative mb-8');
+            modelContainer.id = 'model-container'; 
+            
+            // Canvas placeholder
+            const canvasEl = createEl('canvas', 'w-full h-full block');
+            canvasEl.id = 'starship-canvas';
+            
+            // Loading indicator
+            const loadingIndicator = createEl('div', 'absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90 text-white text-lg font-semibold');
+            loadingIndicator.id = 'loading-indicator';
+            loadingIndicator.innerHTML = '<span class="animate-spin text-4xl mb-4">🚀</span><p>Loading Starship 3D Model...</p>';
+            
+            modelContainer.append(loadingIndicator, canvasEl);
+            
+            // --- Technical Specifications Card ---
+            const specsCard = createEl('div', 'bg-gray-900 p-6 rounded-xl shadow-2xl mb-12 border border-gray-800');
+            const specsTitle = createEl('h2', 'text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-3');
+            specsTitle.textContent = 'Starship & Super Heavy Technical Specifications';
+
+            const allSpecsData = [
+                { label: 'Total Height', value: specs.totalHeight, icon: '⬆️' },
+                { label: 'Diameter', value: specs.diameter, icon: '⭕' },
+                { label: 'Propellant', value: specs.propellant, icon: '⛽' },
+                { label: 'Propellant Mass', value: specs.propellantMass, icon: '⚖️' },
+                { label: 'Max Thrust', value: specs.thrust, icon: '🔥' },
+                { label: 'Engines (Raptor)', value: specs.engines, icon: '⚙️' },
+                { label: 'Payload to LEO', value: specs.payloadLEO, icon: '📦' },
+                { label: 'Reusability Goal', value: specs.reuseGoal, icon: '🔄' }, 
+            ];
+            
+            const filteredSpecsData = allSpecsData.filter(item => 
+                 !['Crew Capacity', 'Water Consumables'].includes(item.label)
+            );
+            
+            const specsGrid = createEl('dl', 'grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4 text-center');
+
+            filteredSpecsData.forEach(item => {
+                // Label (dt)
+                const dt = createEl('dt', 'text-gray-400 text-sm uppercase tracking-wider col-span-1 border-r border-gray-800 pr-4 md:text-left text-center');
+                dt.innerHTML = `<span class="text-xl inline-block mr-2">${item.icon}</span>${item.label}`;
+                
+                // Value (dd)
+                const dd = createEl('dd', 'text-white font-semibold text-lg col-span-1 pl-4 md:text-left text-center');
+                dd.textContent = item.value;
+
+                specsGrid.append(dt, dd);
+            });
+            
+            specsCard.append(specsTitle, specsGrid);
+
+            // Add a link to the new section
+            const callToAction = createEl('div', 'text-center mt-12 mb-8 p-6 bg-gray-800 rounded-xl shadow-inner');
+            const ctaP = createEl('p', 'text-lg text-white mb-4');
+            ctaP.textContent = "See the full plan for human expansion and the journey to Mars.";
+            // Button with glow hover
+            const ctaButton = createEl('button', 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition duration-300 hover:scale-105 cta-glow-hover');
+            ctaButton.textContent = 'Go to Mars Vision';
+            ctaButton.onclick = () => navigateTo('marsvision');
+            callToAction.append(ctaP, ctaButton);
+
+
+            section.append(h1, pHeader, modelContainer, specsCard, callToAction);
+            return section;
+        }
+
+        // --- 3D MODEL FUNCTIONS (Restored) ---
+
+        const onWindowResize = () => {
+            const container = document.getElementById('model-container');
+            if (camera && renderer && container) {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+        };
+
+        const onMouseDown = (e) => {
+            isDragging = true;
+            previousMousePosition.x = e.clientX;
+            previousMousePosition.y = e.clientY;
+            starshipCanvas.style.cursor = 'grabbing';
+        };
+
+        const onMouseUp = () => {
+            isDragging = false;
+            starshipCanvas.style.cursor = 'grab';
+        };
+
+        const onDrag = (e) => {
+            if (isDragging && model) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                // Vertical drag is less effective to keep the rocket upright
+                const deltaY = e.clientY - previousMousePosition.y; 
+
+                model.rotation.y += deltaX * rotationSpeed;
+                model.rotation.x += deltaY * rotationSpeed * 0.5; 
+
+                previousMousePosition.x = e.clientX;
+                previousMousePosition.y = e.clientY;
+            }
+        };
+        
+        const onTouchStart = (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                previousMousePosition.x = e.touches[0].clientX;
+                previousMousePosition.y = e.touches[0].clientY;
+            }
+            starshipCanvas.style.cursor = 'grabbing';
+        };
+
+        const onDragTouch = (e) => {
+            e.preventDefault(); 
+            if (isDragging && model && e.touches.length === 1) {
+                const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                const deltaY = e.touches[0].clientY - previousMousePosition.y; 
+
+                model.rotation.y += deltaX * rotationSpeed;
+                model.rotation.x += deltaY * rotationSpeed * 0.5; 
+
+                previousMousePosition.x = e.touches[0].clientX;
+                previousMousePosition.y = e.touches[0].clientY;
+            }
+        };
+
+
+        const initStarshipModelScene = () => {
+            const container = document.getElementById('model-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // 1. Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x040711); // Match the dark background
+
+            // 2. Camera Setup
+            camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+            camera.position.z = 10;
+
+            // 3. Renderer Setup
+            renderer = new THREE.WebGLRenderer({ canvas: starshipCanvas, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // 4. Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Soft white light
+            scene.add(ambientLight);
+
+            // Directional Light for dramatic effect
+            const dirLight = new THREE.DirectionalLight(0x00b4d8, 1.2); 
+            dirLight.position.set(5, 10, 7); 
+            scene.add(dirLight);
+
+            const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4); 
+            dirLight2.position.set(-5, -10, -7); 
+            scene.add(dirLight2);
+
+            // 5. GLTF Model Loader
+            const loader = new THREE.GLTFLoader();
+            const loadingManager = document.getElementById('loading-indicator');
+            
+            // Use the relative path to the GLTF file
+            loader.load(
+                'white_mesh.gltf', 
+                (gltf) => {
+                    model = gltf.scene;
+                    
+                    // Scale and center the model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+                    const center = box.getCenter(new THREE.Vector3());
+                    
+                    // Calculate a scale factor to fit it in view
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fitFactor = 5 / maxDim; 
+                    model.scale.set(fitFactor, fitFactor, fitFactor);
+                    
+                    // Center the model in the camera view
+                    model.position.sub(center).multiplyScalar(fitFactor);
+                    model.position.y = -size.y * fitFactor / 2; // Position on the "ground"
+                    
+                    // Initial rotation
+                    model.rotation.y = Math.PI * 0.75;
+                    
+                    // Add to scene
+                    scene.add(model);
+                    
+                    // Hide loading indicator
+                    loadingManager.style.display = 'none';
+                },
+                (xhr) => {
+                    // Loading progress (optional)
+                    // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                },
+                (error) => {
+                    console.error('An error occurred loading the 3D model:', error);
+                    // Display error message if loading fails
+                    if (loadingManager) {
+                        loadingManager.className = 'absolute inset-0 flex flex-col items-center justify-center bg-red-900/90 text-white text-md p-4 rounded-xl';
+                        loadingManager.innerHTML = `
+                            <div class="text-2xl mb-2">❌</div>
+                            <p class="font-bold mb-2">3D Model Failed to Load.</p>
+                            <p class="text-sm">This is typically because the required file (white_mesh.gltf) is missing or blocked by the server.</p>
+                            <div class="mt-4 text-xs text-yellow-400 p-2 bg-gray-800 rounded">
+                                💡 The 3D model (white_mesh.gltf) is likely blocked or missing. Ensure it's deployed with your code.
+                            </div>`;
+                    }
+                }
+            );
+
+            // 6. Interaction Handlers for rotation
+            starshipCanvas.addEventListener('mousedown', onMouseDown);
+            starshipCanvas.addEventListener('mouseup', onMouseUp);
+            starshipCanvas.addEventListener('mousemove', onDrag);
+            starshipCanvas.addEventListener('touchstart', onTouchStart);
+            starshipCanvas.addEventListener('touchend', onMouseUp); 
+            starshipCanvas.addEventListener('touchmove', onDragTouch);
+
+            // Handle resize
+            window.addEventListener('resize', onWindowResize);
+        };
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            if (renderer && scene && camera) {
+                // If not dragging, slowly rotate the model for continuous movement
+                if (model && !isDragging) {
+                    model.rotation.y += 0.001;
+                }
+                renderer.render(scene, camera);
+            }
+        };
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            // Set the initial content
+            navigateTo(DATA.activeSection);
+        }
+    </script>
+</head>
+<body>
+    </body>
+</html>
